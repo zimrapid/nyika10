@@ -1,0 +1,61 @@
+{% extends "broadcast/base.html" %}
+{% load sorter_tags pagination_tags %}
+
+{% block title %}Broadcast History{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script src="{{ STATIC_URL }}js/jquery-ui-timepicker-addon.js" type="text/javascript"></script>
+    <script src="{{ STATIC_URL }}js/jquery.multiselect.min.js" type="text/javascript"></script>
+    <script src="{{ STATIC_URL }}broadcast/js/broadcast.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}css/jquery.multiselect.css" />
+{% endblock %}
+
+{% block right %}
+
+{% sort broadcast_messages with "messages" as sorted_messages %}
+{% autopaginate broadcast_messages 20 %}
+
+<div class="module">
+    <h2>Message History</h2>
+    <table id='broadcast-history' class="sortable pagination">
+        <thead>
+            <tr>
+                <th>{% sortlink with "messages" by "broadcast__id" "-broadcast__id" %}Message ID{% endsortlink %}</th>
+                <th>{% sortlink with "messages" by "broadcast__body" "-broadcast__body" %}Message{% endsortlink %}</th>
+                <th>{% sortlink with "messages" by "date_created" "-date_created" %}Queued{% endsortlink %}</th>
+                <th>{% sortlink with "messages" by "status" "-status" %}Status{% endsortlink %}</th>
+                <th>{% sortlink with "messages" by "recipient" "-recipient" %}Recipient{% endsortlink %}</th>
+                <th>{% sortlink with "messages" by "date_sent" "-date_sent" %}Sent {% endsortlink %}</th>
+            </tr>
+        </thead>
+        {% for message in sorted_messages %}
+        <tr class="{% cycle 'odd' 'even' %}">
+            <td>{{ message.broadcast.pk }}</td>
+            <td><span title='{{ message.broadcast.body }}'>{{ message.broadcast.body|truncatewords:2 }}</span></td>
+            <td>{{ message.date_created|date:"m/d/y fa" }}</td>
+            <td>{{ message.get_status_display }}</td>
+            <td>{{ message.recipient }}</td>
+            <td>{{ message.date_sent|date:"m/d/y fa" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan='6'>No message history</td>
+        </tr>
+        {% endfor %}
+        <tfoot>
+            <tr>
+                <td colspan='6'>
+                    {% paginate %}
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+{% endblock %}
+
